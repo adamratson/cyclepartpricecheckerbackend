@@ -18,8 +18,11 @@ def main():
         tempbrands = tempbrands.split('<li>')  # split the string into the separate brands using '"'
         for brand in tempbrands:
             if "http://www.wiggle.co.uk/" in brand:  # is used to identify the brands as they are links to the page
-                brand = brand[33:brand.find('">')-1]  # remove the "/" from the brand name
-                prodlist[brand] = []  # add the brand key to the product list
+                if "zoot" in brand:
+                    prodlist["zoot"] = []  # add the brand key to the product list
+                else:
+                    brand = brand[33:brand.find('">')-1]  # remove the "/" from the brand name
+                    prodlist[brand] = []  # add the brand key to the product list
 
         print("Brand list done!")
         print(prodlist)
@@ -32,13 +35,12 @@ def main():
             f = g.read()
             g.close()
             pagestr = str(f)
-            pagelist = pagestr.split('\\n')  # splits the page into a list rather than one long string, making some
-            # methods
-            # easier later on
-            pagelist = pagelist[pagelist.index(
-                '<div id="search-results" class="bem-product-list--grid" data-page-area="Results">'):
-            pagelist.index('<div class="bem-footer-notes">')]  # slice the list to remove unnecessary content,
-            # from one of the top elements to one just underneath the products
+            pagestr = pagestr.replace(" ", "")
+            pagelist = pagestr.split('\\r\\n')  # splits the page into a list rather than one long string, making some
+            # methods easier later on
+            pagelist = pagelist[pagelist.index('<divid="product-list">'):
+            pagelist.index('<divclass="bem-footer"data-page-area="Footer">')]  # slice the list to remove unnecessary
+            # content, from one of the top elements to one just underneath the products
             while pagelist.count('<div class="bem-sales-strip--grid">') > 1:  # check there are still unprocessed
                 # products in the page
                 descloc = pagelist.index('<div class="bem-sales-strip--grid">')+1
