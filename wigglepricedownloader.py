@@ -25,7 +25,6 @@ def main():
                     prodlist[brand] = []  # add the brand key to the product list
 
         print("Brand list done!")
-        print(prodlist)
         return prodlist
 
     def findproducts(prodlist, url):
@@ -41,43 +40,24 @@ def main():
             pagelist = pagelist[pagelist.index('<divid="product-list">'):
             pagelist.index('<divclass="bem-footer"data-page-area="Footer">')]  # slice the list to remove unnecessary
             # content, from one of the top elements to one just underneath the products
-            while pagelist.count('<div class="bem-sales-strip--grid">') > 1:  # check there are still unprocessed
+            while pagelist.count('<divclass="bem-product-thumb--grid">') > 1:  # check there are still unprocessed
                 # products in the page
-                descloc = pagelist.index('<div class="bem-sales-strip--grid">')+1
-                produrl = pagelist[descloc]
-                produrl = produrl[48:produrl.find('" data-ga-label')]  # extract the product url from the excess html
-                prodname = produrl[1:-1]  # extract the product name from the url
-                x = 0
-                while x < 30:  # iterate through the lines until the product price is found
-                    prodprice = pagelist[descloc+x]
-                    if 'fromamt' in prodprice:  # this is the class of the div that held the price
-                        prodprice = pagelist[descloc+x+1]
-                        if prodprice == "<span class=\"bold\">":  # if the line that was meant to hold the price held
-                            # this value, the price would actually be on the next line. This was due to some products
-                            # not having reviews causing the html around it to change
-                            prodprice = pagelist[descloc+x+2]
-                        if prodprice == "<div class=\"colors\">":  # if the line that was meant to hold the price held
-                            # this value, the product was unavailable and not able to be purchased. I still included it
-                            # in the product list as it may become available again at some point
-                            prodprice = "-"
-                        break  # break the loop when the price has been found
-                    x += 1
-                prodprice = prodprice.replace('\\xc2\\xa3', "")  # this removed some of the excess html surrounding the
-                # actual price
-
-                #  whilst prodprice may not be defined, this can prove
-                # useful as an error is raised if it fails to find the price. the price is needed for the product so
-                # this is actually a useful feature
-                prodprice = prodprice.replace('</li>', "")
-                prodprice = prodprice.replace('</span>', "")  # these two lines removed more excess html
+                for line in pagelist:
+                    if "bem-product-thumb__name--grid" in line:
+                        produrl = line[45:line.find('"data-ga-label')]  # extract the product url from the excess
+                        # html
+                        prodprice = pagelist[pagelist.index(line)+2][49:-7]
+                        break
+                prodname = produrl[24:-1].replace("-", " ")
                 prod = {"prodname": prodname, "prodpricegbp": prodprice, "produrl": produrl}  # the format used for
                 # storing the products
                 if prod not in prodlist[brand]:
                     prodlist[brand].append(prod)  # put the product into the product list under each brand
-                pagelist = pagelist[pagelist.index('<li class="description">')+15:]  # remove the product that has just
-                # been  processed
+                pagelist = pagelist[pagelist.index('<divclass="bem-product-thumb--grid">')+15:]  # remove the product
+                # that has just been  processed
             print("Finished brand:", brand)
         print("Finished downloading products")
+        print(prodlist)
         return prodlist
 
     def dumpjson(dumpee, filename):
