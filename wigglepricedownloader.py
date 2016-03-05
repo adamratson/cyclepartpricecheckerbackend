@@ -57,7 +57,6 @@ def main():
                 # that has just been  processed
             print("Finished brand:", brand)
         print("Finished downloading products")
-        print(prodlist)
         return prodlist
 
     def dumpjson(dumpee, filename):
