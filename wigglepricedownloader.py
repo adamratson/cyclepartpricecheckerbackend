@@ -46,7 +46,7 @@ def main():
                     if "bem-product-thumb__name--grid" in line:
                         produrl = line[45:line.find('"data-ga-label')]  # extract the product url from the excess
                         # html
-                        prodprice = pagelist[pagelist.index(line)+2][49:-7]
+                        prodprice = pagelist[pagelist.index(line)+3][49:-7]
                         break
                 prodname = produrl[24:-1].replace("-", " ")
                 prod = {"prodname": prodname, "prodpricegbp": prodprice, "produrl": produrl}  # the format used for
