@@ -42,6 +42,7 @@ def main():
                 produrl = pagelist[descloc]
                 produrl = produrl[9:produrl.find('" onclick')]  # extract the product url from the excess html
                 prodname = produrl[1:produrl.index("/rp-prod")]  # extract the product name from the url
+                prodname = prodname.replace("-", " ")
                 x = 0
                 while x < 30:  # iterate through the lines until the product price is found
                     prodprice = pagelist[descloc+x]
