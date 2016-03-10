@@ -1,6 +1,7 @@
 import json
 import time
 from urllib.request import urlopen
+from os.path import join
 
 
 def main():
@@ -12,16 +13,16 @@ def main():
 
         f = str(f)  # .read() returns a binary value, this converts it to a string
         print("Downloading brand list")
-        firstbrand = "100-percent"
-        lastbrand = "zwoelfender-1411"
-        tempbrands = f[f.find(firstbrand):f.find(lastbrand)+len(lastbrand)]
-        tempbrands = tempbrands.split('<a')  # split the string into the separate brands using '"'
+        firstbrand = "/1000-mile"
+        lastbrand = "/zoot"
+        tempbrands = f[f.find(firstbrand)-1:f.find(lastbrand)+5]
+        tempbrands = tempbrands.split('<li>')  # split the string into the separate brands using '"'
         for brand in tempbrands:
-            if "/en/shop/" in brand:  # is used to identify the brands as they are links to the page
-                if lastbrand in brand:
-                    prodlist["en/shop/"+lastbrand] = []  # add the brand key to the product list
+            if "http://www.wiggle.co.uk/" in brand:  # is used to identify the brands as they are links to the page
+                if "zoot" in brand:
+                    prodlist["zoot"] = []  # add the brand key to the product list
                 else:
-                    brand = brand[8:brand.find("title")-2]  # remove the "/" from the brand name
+                    brand = brand[33:brand.find('">')-1]  # remove the "/" from the brand name
                     prodlist[brand] = []  # add the brand key to the product list
 
         print("Brand list done!")
@@ -34,25 +35,26 @@ def main():
             f = g.read()
             g.close()
             pagestr = str(f)
-            pagestr = pagestr.replace("\\n", "")
-            pagelist = pagestr.split('>')  # splits the page into a list rather than one long string, making some
+            pagestr = pagestr.replace(" ", "")
+            pagelist = pagestr.split('\\r\\n')  # splits the page into a list rather than one long string, making some
             # methods easier later on
-            pagelist = pagelist[:pagelist.index('<div class="layout-body-outer-wrapper page-footer"')]  # slice the
-            # list to remove unnecessary content, from one of the top elements to one just underneath the products
-            while pagelist.count('<div class="title-and-description"') > 1:  # check there are still unprocessed
+            pagelist = pagelist[pagelist.index('<divid="product-list">'):
+            pagelist.index('<divclass="bem-footer"data-page-area="Footer">')]  # slice the list to remove unnecessary
+            # content, from one of the top elements to one just underneath the products
+            while pagelist.count('<divclass="bem-product-thumb--grid">') > 1:  # check there are still unprocessed
                 # products in the page
                 for line in pagelist:
-                    if '<h3 class="title"' in line:
-                        produrltemp = pagelist[pagelist.index(line)+1]
-                        produrl = produrltemp[8:produrltemp.find('title="')-2]  # extract the product url
-                        # from the excess html
-                        prodprice = pagelist[pagelist.index('<td class="block1"')+4][:-12]
-                prodname = produrl[16:produrl.find("wg_id-")-1].replace("-", " ")
-                prod = {"prodname": prodname, "prodpriceeur": prodprice, "produrl": produrl}  # the format used for
+                    if "bem-product-thumb__name--grid" in line:
+                        produrl = line[45:line.find('"data-ga-label')]  # extract the product url from the excess
+                        # html
+                        prodprice = pagelist[pagelist.index(line)+3][49:-7]
+                        break
+                prodname = produrl[24:-1].replace("-", " ")
+                prod = {"prodname": prodname, "prodpricegbp": prodprice, "produrl": produrl}  # the format used for
                 # storing the products
                 if prod not in prodlist[brand]:
                     prodlist[brand].append(prod)  # put the product into the product list under each brand
-                pagelist = pagelist[pagelist.index('<div class="title-and-description"')+15:]  # remove the product
+                pagelist = pagelist[pagelist.index('<divclass="bem-product-thumb--grid">')+15:]  # remove the product
                 # that has just been  processed
             print("Finished brand:", brand)
         print("Finished downloading products")
@@ -66,8 +68,9 @@ def main():
         print("Finished saving")
 
     starttime = time.time()  # finding the start time to record total time taken for the program to execute
-    prodlist = findproducts(findbrands("http://www.bike-discount.de/en/brands"), "http://www.bike-discount.de/")
-    dumpjson(prodlist, "bikediscountprodlist.json")
+    prodlist = findproducts(findbrands("http://www.wiggle.co.uk/sitemap"),
+                             "http://www.wiggle.co.uk/")
+    dumpjson(prodlist, join("..", "json", "wiggleprodlist.json"))
 
     fintime = time.time()  # finding the final time after code execution
     timetaken = round(fintime-starttime)

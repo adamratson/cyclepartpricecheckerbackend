@@ -1,6 +1,7 @@
 import json
 import time
 from urllib.request import urlopen
+from os.path import join
 
 
 def main():
@@ -86,7 +87,7 @@ def main():
     starttime = time.time()  # finding the start time to record total time taken for the program to execute
     prodlist  = findproducts(findbrands("http://www.chainreactioncycles.com/sitemap"),
                              "http://www.chainreactioncycles.com/")
-    dumpjson(prodlist, "crcprodlist.json")
+    dumpjson(prodlist, join("..", "json", "crcprodlist.json"))
 
     fintime = time.time()  # finding the final time after code execution
     timetaken = round(fintime-starttime)
