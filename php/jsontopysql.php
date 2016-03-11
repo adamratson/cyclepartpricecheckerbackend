@@ -9,9 +9,10 @@
 require("mysqlinfo.php");
 
 $json = file_get_contents("../json/wiggleprodlist.json");
-$jsonprods = json_decode($json);
+$jsonprods = json_decode($json, true);
 
 $conn = new PDO('mysql:host=localhost;dbname=cyclepartpricechecker_db;charset=utf8', $sqlusername, $sqlpassword, array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+
 
 foreach($jsonprods as $jsonbrands){
     foreach($jsonbrands as $jsonprod){
@@ -20,7 +21,7 @@ foreach($jsonprods as $jsonbrands){
         $stmt->bindValue(":jsonprodurl",$jsonprod["produrl"]);
         $stmt->bindValue(":jsonprodpricegbp", $jsonprod["prodpricegbp"]);
         $stmt->bindValue(":jsonprodpriceeur",1);
-        $stmt->bindValue(":jsonbrand", $jsonbrands);
+        $stmt->bindValue(":jsonbrand", array_search($jsonbrands, $jsonprods));
         $stmt->execute();
     }
 }
