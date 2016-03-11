@@ -2,6 +2,8 @@ import json
 import time
 from urllib.request import urlopen
 from os.path import join
+from re import sub
+from urllib import error
 
 
 def main():
@@ -20,9 +22,9 @@ def main():
         for brand in tempbrands:
             if "/en/shop/" in brand:  # is used to identify the brands as they are links to the page
                 if lastbrand in brand:
-                    prodlist["en/shop/"+lastbrand] = []  # add the brand key to the product list
+                    prodlist[lastbrand] = []  # add the brand key to the product list
                 else:
-                    brand = brand[8:brand.find("title")-2]  # remove the "/" from the brand name
+                    brand = brand[16:brand.find("title")-2]  # remove the "/" from the brand name
                     prodlist[brand] = []  # add the brand key to the product list
 
         print("Brand list done!")
@@ -31,7 +33,10 @@ def main():
     def findproducts(prodlist, url):
         for brand in prodlist:
             print("Downloading brand:", brand)
-            g = urlopen(url+brand, timeout=60)  # opens the brand page for each brand
+            try:
+                g = urlopen(url+brand, timeout=60)  # opens the brand page for each brand
+            except error.URLError:
+                g = urlopen(url+brand, timeout=60)  # opens the brand page for each brand
             f = g.read()
             g.close()
             pagestr = str(f)
@@ -67,8 +72,19 @@ def main():
         f.close()
         print("Finished saving")
 
+    def cleanBikeDiscount(prodlist):
+        newprodlist = {}
+        for key, value in prodlist.items():
+            brand = key.replace("-", " ")
+            brand = sub(r"\d", "", brand)
+            if brand[-1] == " ":
+                brand = brand[:-1]
+            newprodlist[brand] = value
+        return newprodlist
+
     starttime = time.time()  # finding the start time to record total time taken for the program to execute
-    prodlist = findproducts(findbrands("http://www.bike-discount.de/en/brands"), "http://www.bike-discount.de/")
+    prodlist = findproducts(findbrands("http://www.bike-discount.de/en/brands"), "http://www.bike-discount.de/en/shop/")
+    prodlist = cleanBikeDiscount(prodlist)
     dumpjson(prodlist, join("..", "json", "bikediscountprodlist.json"))
 
     fintime = time.time()  # finding the final time after code execution
