@@ -26,7 +26,6 @@ def main():
                 else:
                     brand = brand[16:brand.find("title")-2]  # remove the "/" from the brand name
                     prodlist[brand] = []  # add the brand key to the product list
-
         print("Brand list done!")
         return prodlist
 
@@ -53,7 +52,7 @@ def main():
                         produrl = produrltemp[8:produrltemp.find('title="')-2]  # extract the product url
                         # from the excess html
                         prodprice = pagelist[pagelist.index('<td class="block1"')+4][:-12]
-                prodname = produrl[16:produrl.find("wg_id-")-1].replace("-", " ")
+                prodname = produrl[9:produrl.find("wg_id-")-1].replace("-", " ")
                 prod = {"prodname": prodname, "prodpriceeur": prodprice, "produrl": "http://www.bike-discount.de/"+
                                                                                     produrl}  # the format used for
                 # storing the products
@@ -77,7 +76,7 @@ def main():
         for key, value in prodlist.items():
             brand = key.replace("-", " ")
             brand = sub(r"\d", "", brand)
-            if brand[-1] == " ":
+            if brand[:-1] == " ":
                 brand = brand[:-1]
             newprodlist[brand] = value
         return newprodlist
