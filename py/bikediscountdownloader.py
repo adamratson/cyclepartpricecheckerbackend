@@ -49,12 +49,11 @@ def main():
                 for line in pagelist:
                     if '<h3 class="title"' in line:
                         produrltemp = pagelist[pagelist.index(line)+1]
-                        produrl = produrltemp[8:produrltemp.find('title="')-2]  # extract the product url
+                        produrl = produrltemp[10:produrltemp.find('title="')-2]  # extract the product url
                         # from the excess html
                         prodprice = pagelist[pagelist.index('<td class="block1"')+4][:-12]
-                prodname = produrl[9:produrl.find("wg_id-")-1].replace("-", " ")
-                prod = {"prodname": prodname, "prodpriceeur": prodprice, "produrl": "http://www.bike-discount.de/"+
-                                                                                    produrl}  # the format used for
+                prodname = produrl[7:produrl.find("wg_id-")-1].replace("-", " ")
+                prod = {"prodname": prodname, "prodpriceeur": prodprice, "produrl": "http://www.bike-discount.de/"+produrl} # the format used for
                 # storing the products
                 if prod not in prodlist[brand]:
                     prodlist[brand].append(prod)  # put the product into the product list under each brand
