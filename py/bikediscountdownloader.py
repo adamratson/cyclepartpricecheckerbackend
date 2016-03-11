@@ -31,7 +31,7 @@ def main():
     def findproducts(prodlist, url):
         for brand in prodlist:
             print("Downloading brand:", brand)
-            g = urlopen(url+brand)  # opens the brand page for each brand
+            g = urlopen(url+brand, timeout=60)  # opens the brand page for each brand
             f = g.read()
             g.close()
             pagestr = str(f)
@@ -49,7 +49,8 @@ def main():
                         # from the excess html
                         prodprice = pagelist[pagelist.index('<td class="block1"')+4][:-12]
                 prodname = produrl[16:produrl.find("wg_id-")-1].replace("-", " ")
-                prod = {"prodname": prodname, "prodpriceeur": prodprice, "produrl": produrl}  # the format used for
+                prod = {"prodname": prodname, "prodpriceeur": prodprice, "produrl": "http://www.bike-discount.de/"+
+                                                                                    produrl}  # the format used for
                 # storing the products
                 if prod not in prodlist[brand]:
                     prodlist[brand].append(prod)  # put the product into the product list under each brand
