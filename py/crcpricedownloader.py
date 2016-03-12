@@ -35,10 +35,10 @@ def main():
                 pagelist = pagestr.split('\\n')  # splits the page into a list rather than one long string, making some
                 # methods easier later on
                 pagelist = pagelist[pagelist.index('<div class="product_grid_view pdctcontr" id="grid-view">'):
-                pagelist.index('<div class="toolbarBottom">')]  # slice the list to remove unnecessary content, from one of
-                # the top elements to one just underneath the products
-                while pagelist.count('<li class="description">') > 1:  # check there are still unprocessed products in the
-                    # page
+                pagelist.index('<div class="toolbarBottom">')]  # slice the list to remove unnecessary content, from one
+                #  of the top elements to one just underneath the products
+                while pagelist.count('<li class="description">') > 1:  # check there are still unprocessed products in
+                    # the page
                     descloc = pagelist.index('<li class="description">')+1
                     produrl = pagelist[descloc]
                     produrl = produrl[9:produrl.find('" onclick')]  # extract the product url from the excess html
@@ -49,30 +49,30 @@ def main():
                         prodprice = pagelist[descloc+x]
                         if 'fromamt' in prodprice:  # this is the class of the div that held the price
                             prodprice = pagelist[descloc+x+1]
-                            if prodprice == "<span class=\"bold\">":  # if the line that was meant to hold the price held
-                                # this value, the price would actually be on the next line. This was due to some products
-                                # not having reviews causing the html around it to change
+                            if prodprice == "<span class=\"bold\">":  # if the line that was meant to hold the price
+                                # held this value, the price would actually be on the next line. This was due to some
+                                # products not having reviews causing the html around it to change
                                 prodprice = pagelist[descloc+x+2]
-                            if prodprice == "<div class=\"colors\">":  # if the line that was meant to hold the price held
-                                # this value, the product was unavailable and not able to be purchased. I still included it
-                                # in the product list as it may become available again at some point
+                            if prodprice == "<div class=\"colors\">":  # if the line that was meant to hold the price
+                                # held this value, the product was unavailable and not able to be purchased. I still
+                                # included it in the product list as it may become available again at some point
                                 prodprice = "-"
                             break  # break the loop when the price has been found
                         x += 1
-                    prodprice = prodprice.replace('\\xc2\\xa3', "")  # this removed some of the excess html surrounding the
-                    # actual price
+                    prodprice = prodprice.replace('\\xc2\\xa3', "")  # this removed some of the excess html surrounding
+                    # the actual price
 
                     #  whilst prodprice may not be defined, this can prove
                     # useful as an error is raised if it fails to find the price. the price is needed for the product so
                     # this is actually a useful feature
                     prodprice = prodprice.replace('</li>', "")
                     prodprice = prodprice.replace('</span>', "")  # these two lines removed more excess html
-                    prod = {"prodname": prodname, "prodpricegbp": prodprice, "produrl": produrl}  # the format used for
-                    # storing the products
+                    prod = {"prodname": prodname, "prodpricegbp": prodprice, "produrl": url[:-1]+produrl}  # the format
+                    # used for storing the products
                     if prod not in prodlist[brand]:
                         prodlist[brand].append(prod)  # put the product into the product list under each brand
-                    pagelist = pagelist[pagelist.index('<li class="description">')+15:]  # remove the product that has just
-                    # been  processed
+                    pagelist = pagelist[pagelist.index('<li class="description">')+15:]  # remove the product that has
+                    # just been  processed
                 print("Finished brand:", brand)
         print("Finished downloading products")
         return prodlist

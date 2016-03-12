@@ -53,7 +53,7 @@ def main():
                         # from the excess html
                         prodprice = pagelist[pagelist.index('<td class="block1"')+4][:-12]
                 prodname = produrl[7:produrl.find("wg_id-")-1].replace("-", " ")
-                prod = {"prodname": prodname, "prodpriceeur": prodprice, "produrl": "http://www.bike-discount.de/"+produrl} # the format used for
+                prod = {"prodname": prodname, "prodpriceeur": prodprice, "produrl": url+produrl} # the format used for
                 # storing the products
                 if prod not in prodlist[brand]:
                     prodlist[brand].append(prod)  # put the product into the product list under each brand
