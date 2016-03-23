@@ -41,9 +41,6 @@ foreach($jsonfiles as $jsonfile){
             $stmt->bindValue(":jsonprodname", $jsonprod["prodname"]);
             $stmt->bindValue(":jsonprodurl",$jsonprod["produrl"]);
             if (isset($jsonprod["prodpricegbp"])) {
-                if ($jsonprod["prodname"] == "colnago ac r 105 2016 road bike"){
-                    print $jsonprod["prodpricegbp"];
-                }
                 $stmt->bindValue(":jsonprodpricegbp", $jsonprod["prodpricegbp"]);
                 $stmt->bindValue(":jsonprodpriceeur", $jsonprod["prodpricegbp"]*$gbptoeur);
             } else {
