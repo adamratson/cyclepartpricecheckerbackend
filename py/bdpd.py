@@ -84,7 +84,6 @@ def main():
     starttime = time.time()  # finding the start time to record total time taken for the program to execute
     prodlist = findproducts(findbrands("http://www.bike-discount.de/en/brands"), "http://www.bike-discount.de/en/shop/")
     prodlist = cleanBikeDiscount(prodlist)
-    print(prodlist)
     dumpjson(prodlist, join("..", "json", "bikediscountprodlist.json"))
 
     fintime = time.time()  # finding the final time after code execution
