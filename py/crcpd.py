@@ -44,33 +44,27 @@ def main():
                     produrl = produrl[9:produrl.find('" onclick')]  # extract the product url from the excess html
                     prodname = produrl[1:produrl.index("/rp-prod")]  # extract the product name from the url
                     prodname = prodname.replace("-", " ")
-                    x = 0
-                    while x < 30:  # iterate through the lines until the product price is found
-                        prodprice = pagelist[descloc+x]
-                        if 'fromamt' in prodprice:  # this is the class of the div that held the price
-                            prodprice = pagelist[descloc+x+1]
-                            if prodprice == "<span class=\"bold\">":  # if the line that was meant to hold the price
-                                # held this value, the price would actually be on the next line. This was due to some
-                                # products not having reviews causing the html around it to change
-                                prodprice = pagelist[descloc+x+2]
-                            if prodprice == "<div class=\"colors\">":  # if the line that was meant to hold the price
-                                # held this value, the product was unavailable and not able to be purchased. I still
-                                # included it in the product list as it may become available again at some point
-                                prodprice = "-"
-                            break  # break the loop when the price has been found
-                        x += 1
-                    prodprice = prodprice.replace('\\xc2\\xa3', "")  # this removed some of the excess html surrounding
-                    # the actual price
-
-                    #  whilst prodprice may not be defined, this can prove
-                    # useful as an error is raised if it fails to find the price. the price is needed for the product so
-                    # this is actually a useful feature
-                    prodprice = prodprice.replace('</li>', "")
-                    prodprice = prodprice.replace('</span>', "")  # these two lines removed more excess html
-                    prod = {"prodname": prodname, "prodpricegbp": prodprice, "produrl": url[:-1]+produrl}  # the format
-                    # used for storing the products
-                    if prod not in prodlist[brand]:
-                        prodlist[brand].append(prod)  # put the product into the product list under each brand
+                    if "bundle" not in prodname and "builder" not in prodname:
+                        prodprice = pagelist[pagelist.index('<li class="fromamt">')+1]
+                        if prodprice == '<span class="bold">':
+                            prodprice = pagelist[pagelist.index('<li class="fromamt">')+2]
+                        prodprice = prodprice.replace('\\xc2\\xa3', "")  # this removed some of the excess html surrounding
+                        # the actual price
+                        #  whilst prodprice may not be defined, this can prove
+                        # useful as an error is raised if it fails to find the price. the price is needed for the product so
+                        # this is actually a useful feature
+                        prodprice = prodprice.replace('</li>', "")
+                        prodprice = prodprice.replace('</span>', "")  # these two lines removed more excess html
+                        if "&nbsp;" in prodprice:
+                            prodprice = prodprice[prodprice.replace("&nbsp", "YYY", 1).find("&nbsp;")+6:]
+                        try:
+                            prodprice = float(prodprice)
+                            prod = {"prodname": prodname, "prodpricegbp": prodprice, "produrl": url[:-1]+produrl}  # the format
+                            # used for storing the products
+                            if prod not in prodlist[brand]:
+                                prodlist[brand].append(prod)  # put the product into the product list under each brand
+                        except ValueError:
+                            pass
                     pagelist = pagelist[pagelist.index('<li class="description">')+15:]  # remove the product that has
                     # just been  processed
                 print("Finished brand:", brand)
