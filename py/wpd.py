@@ -1,42 +1,44 @@
 import json
 import time
+import requests
 from urllib.request import urlopen
 from os.path import join
 
 
-def main():
-    def findbrands(url):
+class pd():
+    def __init__(self):
+        self.prodlist = {}
+        self.brandlist = {}
+
+    def findbrands(self, url):
         g = urlopen(url)  # opening the site map page
         f = g.read()  # using the read function to extract the contents of the html request
         g.close()  # close the file to save memory and prevent a memory leak
-        prodlist = {}
 
         f = str(f)  # .read() returns a binary value, this converts it to a string
         print("Downloading brand list")
         firstbrand = "/1000-mile"
         lastbrand = "/zoot"
-        tempbrands = f[f.find(firstbrand)-1:f.find(lastbrand)+5]
+        tempbrands = f[f.find(firstbrand)-1:f.find(lastbrand)+21]
         tempbrands = tempbrands.split('<li>')  # split the string into the separate brands using '"'
         for brand in tempbrands:
             if "http://www.wiggle.co.uk/" in brand:  # is used to identify the brands as they are links to the page
-                if "zoot" in brand:
-                    prodlist["zoot"] = []  # add the brand key to the product list
-                else:
-                    brand = brand[33:brand.find('">')-1]  # remove the "/" from the brand name
-                    prodlist[brand] = []  # add the brand key to the product list
+                brandurl = brand[9:brand.find('">')]  # remove the "/" from the brand name
+                brandname = brand[brand.find('/">')+3:brand.find('</a></li>')]
+                self.prodlist[brandname] = []  # add the brand key to the product list
+                self.brandlist[brandname] = brandurl
         print("Brand list done!")
-        return prodlist
 
-    def findproducts(prodlist, url, getargs=""):
-        for brand in prodlist:
+    def findproducts(self, url):
+        for brand in self.brandlist:
             print("Downloading brand:", brand)
             x = 1
-            g = urlopen(url+brand+getargs+"&g="+str(x))  # opens the brand page for each brand
-            f = g.read()
-            g.close()
+            g = requests.get(self.brandlist[brand], params={"g":str(x), "ps":"96"}, timeout=30)
+            g.raise_for_status()
+            f = g.text
             pagestr = str(f)
             pagestr = pagestr.replace(" ", "")
-            pagelist = pagestr.split('\\r\\n')  # splits the page into a list rather than one long string, making some
+            pagelist = pagestr.split('\r\n')  # splits the page into a list rather than one long string, making some
             # methods easier later on
             pagelist = pagelist[pagelist.index('<divid="product-list">'):
             pagelist.index('<divclass="bem-footer"data-page-area="Footer">')]  # slice the list to remove unnecessary
@@ -53,44 +55,43 @@ def main():
                     prodname = produrl[24:-1].replace("-", " ")
                     prod = {"prodname": prodname, "prodpricegbp": prodprice.replace(",", ""), "produrl": produrl}  # the
                     # format used for storing the products
-                    if prod not in prodlist[brand]:
-                        prodlist[brand].append(prod)  # put the product into the product list under each brand
+                    if prod not in self.prodlist[brand]:
+                        self.prodlist[brand].append(prod)  # put the product into the product list under each brand
                     pagelist = pagelist[pagelist.index('<divclass="bem-product-thumb--grid">')+15:]  # remove the product
                     # that has just been  processed
                 x += 96
-                g = urlopen(url+brand+getargs+"&g="+str(x))  # opens the brand page for each brand
-                f = g.read()
-                g.close()
+                g = requests.get(self.brandlist[brand], params={"g":str(x), "ps":"96"}, timeout=30)
+                g.raise_for_status()
+                f = g.text
                 pagestr = str(f)
                 pagestr = pagestr.replace(" ", "")
-                pagelist = pagestr.split('\\r\\n')  # splits the page into a list rather than one long string, making some
+                pagelist = pagestr.split('\r\n')  # splits the page into a list rather than one long string, making some
                 # methods easier later on
                 pagelist = pagelist[pagelist.index('<divid="product-list">'):
                 pagelist.index('<divclass="bem-footer"data-page-area="Footer">')]  # slice the list to remove unnecessary
                 # content, from one of the top elements to one just underneath the products
             print("Finished brand:", brand)
         print("Finished downloading products")
-        return prodlist
 
-    def dumpjson(dumpee, filename):
+    def dumpjson(self, dumpee, filename):
         print("Saving to ", filename)
         f = open(filename, "w")
         json.dump(dumpee, f)  # dump the dict into a json file
         f.close()
         print("Finished saving")
 
-    starttime = time.time()  # finding the start time to record total time taken for the program to execute
-    prodlist = findproducts(findbrands("http://www.wiggle.co.uk/sitemap"),
-                             "http://www.wiggle.co.uk/", "?ps=96")
-    dumpjson(prodlist, join("..", "json", "wiggleprodlist.json"))
+    def main(self):
+        starttime = time.time()  # finding the start time to record total time taken for the program to execute
+        self.findbrands("http://www.wiggle.co.uk/sitemap")
+        self.findproducts("http://www.wiggle.co.uk/")
+        self.dumpjson(self.prodlist, join("..", "json", "wiggleprodlist.json"))
+        self.dumpjson(self.brandlist, join("..", "json", "wigglebrandlist.json"))
 
-    fintime = time.time()  # finding the final time after code execution
-    timetaken = round(fintime-starttime)
-    print(timetaken, "seconds")  # prints the time taken for the program to complete in seconds, useful for enhancing
-    # efficiency
+        fintime = time.time()  # finding the final time after code execution
+        timetaken = round(fintime-starttime)
+        print(timetaken, "seconds")  # prints the time taken for the program to complete in seconds, useful for enhancing
+        # efficiency
 
 if __name__ == "__main__":
-    main()
-#628kb
-#1197kb
-#1535kb
+    wpd = pd()
+    wpd.main()

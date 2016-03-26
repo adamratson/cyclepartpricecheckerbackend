@@ -4,30 +4,33 @@ from urllib.request import urlopen
 from os.path import join
 
 
-def main():
-    def findbrands(url):
+class pd():
+    def __init__(self):
+        self.prodlist = {}
+        self.brandlist = {}
+
+    def findbrands(self, url):
         g = urlopen(url)  # opening the site map page
         f = g.read()  # using the read function to extract the contents of the html request
         g.close()  # close the file to save memory and prevent a memory leak
-        prodlist = {}
 
         f = str(f)  # .read() returns a binary value, this converts it to a string
         print("Downloading brand list")
-        tempbrands = f[f.find("/100-")-1:f.find("/zoot")+5].replace('</a></li>\\n<li><a href=', "")
-        tempbrands = tempbrands.replace(">", "")  # replace special html chars
-        tempbrands = tempbrands.split('"')  # split the string into the separate brands using '"'
+        tempbrands = f[f.find("/100-")-15:f.find("/zoot")+11]
+        tempbrands = tempbrands.split('</li>')
         for brand in tempbrands:
-            if "/" in brand:  # "/" is used to identify the brands as they are links to the page
-                brand = brand[1:]  # remove the "/" from the brand name
-                prodlist[brand] = []  # add the brand key to the product list
-
+            if '<a href="' in brand:
+                brand = brand.replace(">", "YYY", 1)
+                brandname = brand[brand.find(">")+1:brand.find("</a>")]
+                brandurl = brand[17:brand.find(">")-1]
+                self.brandlist[brandname] = "http://chainreactioncycles.com"+brandurl
+                self.prodlist[brandname] = []
         print("Brand list done!")
-        return prodlist
 
-    def findproducts(prodlist, url):
-        for brand in prodlist:
+    def findproducts(self, url):
+        for brand in self.brandlist:
             print("Downloading brand:", brand)
-            g = urlopen(url+brand+"?perPage=20000")  # opens the brand page for each brand
+            g = urlopen(self.brandlist[brand]+"?perPage=20000")  # opens the brand page for each brand
             f = g.read()
             g.close()
             pagestr = str(f)
@@ -61,32 +64,33 @@ def main():
                             prodprice = float(prodprice)
                             prod = {"prodname": prodname, "prodpricegbp": prodprice, "produrl": url[:-1]+produrl}  # the format
                             # used for storing the products
-                            if prod not in prodlist[brand]:
-                                prodlist[brand].append(prod)  # put the product into the product list under each brand
+                            if prod not in self.prodlist[brand]:
+                                self.prodlist[brand].append(prod)  # put the product into the product list under each brand
                         except ValueError:
                             pass
                     pagelist = pagelist[pagelist.index('<li class="description">')+15:]  # remove the product that has
                     # just been  processed
                 print("Finished brand:", brand)
         print("Finished downloading products")
-        return prodlist
 
-    def dumpjson(dumpee, filename):
+    def dumpjson(self, dumpee, filename):
         print("Saving to prodlist.json")
         f = open(filename, "w")
         json.dump(dumpee, f)  # dump the dict into a json file
         f.close()
         print("Finished saving")
 
-    starttime = time.time()  # finding the start time to record total time taken for the program to execute
-    prodlist  = findproducts(findbrands("http://www.chainreactioncycles.com/sitemap"),
-                             "http://www.chainreactioncycles.com/")
-    dumpjson(prodlist, join("..", "json", "crcprodlist.json"))
-
-    fintime = time.time()  # finding the final time after code execution
-    timetaken = round(fintime-starttime)
-    print(timetaken, "seconds")  # prints the time taken for the program to complete in seconds, useful for enhancing
-    # efficiency
+    def main(self):
+        starttime = time.time()  # finding the start time to record total time taken for the program to execute
+        self.findbrands("http://www.chainreactioncycles.com/sitemap")
+        self.findproducts("http://www.chainreactioncycles.com")
+        self.dumpjson(self.prodlist, join("..", "json", "crcprodlist.json"))
+        self.dumpjson(self.brandlist, join("..", "json", "crcbrandlist.json"))
+        fintime = time.time()  # finding the final time after code execution
+        timetaken = round(fintime-starttime)
+        print(timetaken, "seconds")  # prints the time taken for the program to complete in seconds, useful for enhancing
+        # efficiency
 
 if __name__ == "__main__":
-    main()
+    crcpd = pd()
+    crcpd.main()
