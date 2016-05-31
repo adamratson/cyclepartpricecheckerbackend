@@ -20,11 +20,7 @@ $gbptoeur = (1/$exchangeratesarray["rates"]["GBP"])*$exchangeratesarray["rates"]
 
 $conn = new PDO('mysql:host=localhost;dbname=cyclepartpricechecker_db;charset=utf8', $sqlusername, $sqlpassword, array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 
-$stmt = $conn->prepare("DELETE FROM wiggleprods");
-$stmt->execute();
-$stmt = $conn->prepare("DELETE FROM bdprods");
-$stmt->execute();
-$stmt = $conn->prepare("DELETE FROM crcprods");
+$stmt = $conn->prepare("DELETE FROM prods");
 $stmt->execute();
 $stmt = $conn->prepare("DELETE FROM brands");
 $stmt->execute();
@@ -100,13 +96,13 @@ foreach($prodfiles as $prodfile){
     foreach($jsonprods as $jsonbrands){
         foreach($jsonbrands as $jsonprod){
             if ($prodfile == "wiggleprodlist.json") {
-                $stmt = $conn->prepare("INSERT INTO wiggleprods (prodname, produrl, prodpricegbp, prodpriceeur, brandID, retailer) VALUES (:jsonprodname, :jsonprodurl, :jsonprodpricegbp, :jsonprodpriceeur, :brandID, :retailer)");
+                $stmt = $conn->prepare("INSERT INTO prods (prodname, produrl, prodpricegbp, prodpriceeur, brandID, retailer) VALUES (:jsonprodname, :jsonprodurl, :jsonprodpricegbp, :jsonprodpriceeur, :brandID, :retailer)");
                 $stmt->bindValue(":retailer", "wiggle");
             } elseif ($prodfile == "bikediscountprodlist.json"){
-                $stmt = $conn->prepare("INSERT INTO bdprods (prodname, produrl, prodpricegbp, prodpriceeur, brandID, retailer) VALUES (:jsonprodname, :jsonprodurl, :jsonprodpricegbp, :jsonprodpriceeur, :brandID, :retailer)");
+                $stmt = $conn->prepare("INSERT INTO prods (prodname, produrl, prodpricegbp, prodpriceeur, brandID, retailer) VALUES (:jsonprodname, :jsonprodurl, :jsonprodpricegbp, :jsonprodpriceeur, :brandID, :retailer)");
                 $stmt->bindValue(":retailer", "bikediscount");
             } elseif ($prodfile == "crcprodlist.json"){
-                $stmt = $conn->prepare("INSERT INTO crcprods (prodname, produrl, prodpricegbp, prodpriceeur, brandID, retailer) VALUES (:jsonprodname, :jsonprodurl, :jsonprodpricegbp, :jsonprodpriceeur, :brandID, :retailer)");
+                $stmt = $conn->prepare("INSERT INTO prods (prodname, produrl, prodpricegbp, prodpriceeur, brandID, retailer) VALUES (:jsonprodname, :jsonprodurl, :jsonprodpricegbp, :jsonprodpriceeur, :brandID, :retailer)");
                 $stmt->bindValue(":retailer", "crc");
             }
             $stmt->bindValue(":jsonprodname", $jsonprod["prodname"]);
